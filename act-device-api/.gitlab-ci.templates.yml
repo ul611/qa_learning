@@ -1,0 +1,20 @@
+.go:
+  image: golang:1.16-stretch
+  variables:
+    GOMAXPROCS: "8"
+
+.test:
+  extends: .go
+  after_script:
+    - go tool cover -func cover.out
+  # https://rubular.com/
+  # https://docs.gitlab.com/ee/ci/yaml/index.html#coverage
+  coverage: '/^total:\s+\(statements\)\s+\d+.\d+%$/'
+  artifacts:
+    when: always
+    paths:
+      - json-report.txt
+      - cover.out
+    reports:
+      junit: junit-report.xml
+    expire_in: 7 days

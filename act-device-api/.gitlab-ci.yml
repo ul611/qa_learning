@@ -1,0 +1,24 @@
+include:
+  local: .gitlab-ci.templates.yml
+
+lint:
+  image: golangci/golangci-lint:v1.43.0
+  allow_failure: true
+  script:
+    - make lint
+
+
+# две джобы с тестами, чтобы сравнить вывод в консоль и удобство формирования отчета через gotestsum
+test:
+  extends: .test
+  allow_failure: true
+  script:
+    - go test -v -race -timeout 30s -json -coverprofile cover.out ./... 2>&1 | tee json-report.txt
+
+test-gotestsum:
+  extends: .test
+  allow_failure: true
+  before_script:
+    - go install gotest.tools/gotestsum@latest
+  script:
+    - gotestsum --junitfile junit-report.xml --jsonfile json-report.txt -- -v -race -timeout 30s -coverprofile cover.out ./...
